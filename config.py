@@ -23,7 +23,7 @@ APP_ID = int(os.environ.get("APP_ID", "26944587" )) #Your API ID from my.telegra
 API_HASH = os.environ.get("API_HASH", "7261a455f2a6159b8a2fbfecd1a63004") #Your API Hash from my.telegram.org
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002490852825")) #Your db channel Id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003438729318")) #Your db channel Id
 OWNER = os.environ.get("OWNER", "ᴅɪᴀʙʟᴏ") # Owner username without @
 OWNER_ID = int(os.environ.get("OWNER_ID", "6888478102")) # Owner id
 #--------------------------------------------
@@ -45,7 +45,7 @@ SHORTLINK_API = os.environ.get("SHORTLINK_API", "7a541402aeacbdbff361696add89bce
 TUT_VID = os.environ.get("TUT_VID","https://t.me/How_To_Download_OTx")
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
 
-SHORTENER_PIC = os.environ.get("SHORTENER_PIC", "https://telegra.ph/file/4833dbed5bf27f709f486-1226172ea08c198735.jpg")
+SHORTENER_PIC = os.environ.get("SHORTENER_PIC", "https://telegra.ph/file/ce313689202de1f38afc7-43265ec5f4d1ad77eb.jpg")
 #--------------------------------------------
 
 #--------------------------------------------
