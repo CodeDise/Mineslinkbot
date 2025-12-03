@@ -30,7 +30,7 @@ OWNER_ID = int(os.environ.get("OWNER_ID", "6888478102")) # Owner id
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
 DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://kojar29650:h8jvNvpyteVB8AzM@cluster0.uywzxza.mongodb.net/?retryWrites=true&w=majority&appName=Mineslinkbot")
-DB_NAME = os.environ.get("DATABASE_NAME", "Diablo")
+DB_NAME = os.environ.get("DATABASE_NAME", "Mineslinkbot")
 #--------------------------------------------
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "20"))  # 0 means no expiry
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", "7a541402aeacbdbff361696add89bce2cf8afa4e")
