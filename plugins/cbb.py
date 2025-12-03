@@ -12,6 +12,8 @@ from bot import Bot
 from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import *
+import asyncio
+from helper_func import check_admin, to_small_caps
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -154,6 +156,55 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             "sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ ɪᴛs ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
+
+    elif data.startswith("set_short_") or data == "close_shortener":
+        # Admin check manually since this handler is global
+        if not await check_admin(None, client, query):
+            return await query.answer("You are not an admin!", show_alert=True)
+
+        if data == "set_short_url":
+            await query.message.edit_text(f"<b>{to_small_caps('Send the new Shortener URL (e.g. arolinks.com)')}:</b>")
+            try:
+                msg = await client.listen(chat_id=query.from_user.id, timeout=60)
+                if msg.text:
+                    await db.set_shortener_url(msg.text)
+                    await query.message.edit_text(f"<b>✅ {to_small_caps('Shortener URL updated to')}:</b> `{msg.text}`")
+                else:
+                    await query.message.edit_text(f"<b>❌ {to_small_caps('Invalid input. Text required.')}</b>")
+            except asyncio.TimeoutError:
+                await query.message.edit_text(f"<b>❌ {to_small_caps('Timeout. Please try again.')}</b>")
+
+        elif data == "set_short_api":
+            await query.message.edit_text(f"<b>{to_small_caps('Send the new Shortener API Key')}:</b>")
+            try:
+                msg = await client.listen(chat_id=query.from_user.id, timeout=60)
+                if msg.text:
+                    await db.set_shortener_api(msg.text)
+                    await query.message.edit_text(f"<b>✅ {to_small_caps('Shortener API updated to')}:</b> `{msg.text}`")
+                else:
+                    await query.message.edit_text(f"<b>❌ {to_small_caps('Invalid input. Text required.')}</b>")
+            except asyncio.TimeoutError:
+                await query.message.edit_text(f"<b>❌ {to_small_caps('Timeout. Please try again.')}</b>")
+
+        elif data == "set_short_time":
+            await query.message.edit_text(
+                f"<b>{to_small_caps('Send the Verification Time in hours (e.g., 5 for 5 hours)')}.</b>\n"
+                f"<i>{to_small_caps('Send 0 to disable/expire immediately.')}</i>"
+            )
+            try:
+                msg = await client.listen(chat_id=query.from_user.id, timeout=60)
+                if msg.text and msg.text.isdigit():
+                    hours = int(msg.text)
+                    seconds = hours * 3600
+                    await db.set_verification_time(seconds)
+                    await query.message.edit_text(f"<b>✅ {to_small_caps('Verification Time updated to')}:</b> `{hours} Hours` ({seconds} seconds)")
+                else:
+                    await query.message.edit_text(f"<b>❌ {to_small_caps('Invalid input. Number required.')}</b>")
+            except asyncio.TimeoutError:
+                await query.message.edit_text(f"<b>❌ {to_small_caps('Timeout. Please try again.')}</b>")
+
+        elif data == "close_shortener":
+            await query.message.delete()
 
 
 # Don't Remove Credit @CodeFlix_Bots, @rohit_1888

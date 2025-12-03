@@ -48,6 +48,7 @@ class Rohit:
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
+        self.shortener_config_data = self.database['shortener_config']
         
 
 
@@ -234,6 +235,75 @@ class Rohit:
         current['verified_time'] = verified_time
         current['link'] = link
         await self.db_update_verify_status(user_id, current)
+
+    async def check_user_verification(self, user_id):
+        user = await self.user_data.find_one({'_id': user_id})
+        if not user:
+            return False
+
+        verify_status = user.get('verify_status', {})
+        if not verify_status.get('is_verified', False):
+            return False
+
+        verified_time = verify_status.get('verified_time', 0)
+
+        # Get configured duration
+        config = await self.get_shortener_config()
+        duration = config.get('time', 0)
+
+        if not duration: # If no duration set, force verify every time? or assume always verified?
+                         # Usually if shortener is enabled, we want verification.
+                         # If duration is 0, let's assume it expires immediately (so returns False).
+            return False
+
+        if time.time() - verified_time < duration:
+            return True
+
+        return False
+
+    async def update_user_verification(self, user_id):
+        current_time = time.time()
+        await self.user_data.update_one(
+            {'_id': user_id},
+            {
+                '$set': {
+                    'verify_status.is_verified': True,
+                    'verify_status.verified_time': current_time
+                }
+            }
+        )
+        # Increment verify count
+        await self.sex_data.update_one({'_id': user_id}, {'$inc': {'verify_count': 1}}, upsert=True)
+
+    # SHORTENER SETTINGS
+    async def get_shortener_config(self):
+        config = await self.shortener_config_data.find_one({})
+        from config import SHORTLINK_URL, SHORTLINK_API
+        if not config:
+            return {
+                "url": SHORTLINK_URL,
+                "api": SHORTLINK_API,
+                "time": 0
+            }
+        # Fallback to env vars if keys are missing in DB config
+        if "url" not in config:
+            config["url"] = SHORTLINK_URL
+        if "api" not in config:
+            config["api"] = SHORTLINK_API
+        if "time" not in config:
+            config["time"] = 0
+
+        return config
+
+    async def set_shortener_url(self, url):
+        await self.shortener_config_data.update_one({}, {"$set": {"url": url}}, upsert=True)
+
+    async def set_shortener_api(self, api):
+        await self.shortener_config_data.update_one({}, {"$set": {"api": api}}, upsert=True)
+
+    async def set_verification_time(self, duration):
+        await self.shortener_config_data.update_one({}, {"$set": {"time": duration}}, upsert=True)
+
 
     # Set verify count (overwrite with new value)
     async def set_verify_count(self, user_id: int, count: int):
