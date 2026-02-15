@@ -36,8 +36,12 @@ TUT_VID = f"{TUT_VID}"
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
+        config = await db.get_shortener_config()
+        url = config.get("url")
+        api = config.get("api")
+
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+        short_link = await get_shortlink(url, api, prem_link)
 
         buttons = [
             [
@@ -99,10 +103,15 @@ async def start_command(client: Client, message: Message):
             basic = text.split(" ", 1)[1]
             if basic.startswith("yu3elk"):
                 base64_string = basic[6:-1]
+                # Update verification if user came from shortener
+                await db.update_user_verification(user_id)
             else:
                 base64_string = basic
 
-            if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
+            # Check verification
+            is_verified = await db.check_user_verification(user_id)
+
+            if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk") and not is_verified:
                 await short_url(client, message, base64_string)
                 return
 
